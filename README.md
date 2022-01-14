@@ -7,6 +7,8 @@ Notes:
 - `[BoundValue]` maps statically bounded parameter to be looked up from a dictionary provided at runtime
 - `[Guard]` describes the acceptable properties of parameter candidate
 
+Code finds all viable paths statically and then runs them as a sequence.
+
 ```csharp
 public class TestAspects
 {
