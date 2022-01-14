@@ -11,38 +11,38 @@ Notes:
 public class TestAspects
 {
     [State]
-    [Declaration(typeof(A), "Name", SubsetExpressionType.Equal, "amir")]
-    public A Step1([BoundValue("foo")] string dummy)
+    [Declaration(typeof(A), "Name", SubsetExpressionType.Equal, "foo")]
+    public A Step1([BoundValue("key")] string dummy)
     {
         return new A
         {
-            Name = "amir"
+            Name = "foo"
         };
     }
     
     [State]
-    [Declaration(typeof(B), "Name", SubsetExpressionType.Equal, "taha")]
+    [Declaration(typeof(B), "Name", SubsetExpressionType.Equal, "bar")]
     public async Task<B> Step2(
-        [Guard(typeof(A), "Name", SubsetExpressionType.Equal, "amir")]
+        [Guard(typeof(A), "Name", SubsetExpressionType.Equal, "foo")]
         A a)
     {
         await Task.Delay(2000);
         
         return new B
         {
-            Name = "taha"
+            Name = "bar"
         };
     } 
     
     [State]
-    [Declaration(typeof(C), "Name", SubsetExpressionType.Equal, "zack")]
+    [Declaration(typeof(C), "Name", SubsetExpressionType.Equal, "baz")]
     public C Step3(
-        [Guard(typeof(B), "Name", SubsetExpressionType.Equal, "taha")]
+        [Guard(typeof(B), "Name", SubsetExpressionType.Equal, "bar")]
         B b)
     {
         return new C
         {
-            Name = "zack"
+            Name = "baz"
         };
     } 
 }
