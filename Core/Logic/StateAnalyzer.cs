@@ -15,7 +15,7 @@ namespace Core.Logic
             {
                 var guards = destination.ParameterGuards.GetValueOrDefault(parameterInfo, new List<GuardAttribute>());
                 if (guards!.All(guard =>
-                        source.Declarations.All(guard.IsCompatibleWith)))
+                        source.Declarations.All(decl => decl.IsSubsetOf(guard))))
                 {
                     return true;
                 }

@@ -48,6 +48,13 @@ namespace Core
                         throw new ArgumentException("Inconsistent guard type over parameter.");
                     }
 
+                    if (declAttrs.Any(y => y.Type != returnType))
+                    {
+                        throw new ArgumentException("Inconsistent declaration type over return type.");
+                    }
+                    
+                    // Check for overlap in guards
+                    
                     return new State
                     {
                         Name = x.Name,

@@ -63,7 +63,10 @@ namespace Core.Attributes
             Validator = lambdaExpr.Compile();
         }
 
-        public bool IsCompatibleWith(GuardAttribute guard)
+        /// <summary>
+        /// Checks whether A is a subset of B
+        /// </summary>
+        public bool IsSubsetOf(GuardAttribute guard)
         {
             var expressionAnalyzer = new ExpressionAnalyzer();
             
@@ -72,7 +75,7 @@ namespace Core.Attributes
             {
                 if (Type == guard.Type)
                 {
-                    return expressionAnalyzer.IsCompatibleWith(ExpressionType, Value, guard.ExpressionType, guard.Value);
+                    return expressionAnalyzer.IsSubsetOf(ExpressionType, Value, guard.ExpressionType, guard.Value);
                 }
             }
 
