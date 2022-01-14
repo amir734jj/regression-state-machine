@@ -7,7 +7,7 @@ Notes:
 - `[BoundValue]` maps statically bounded parameter to be looked up from a dictionary provided at runtime
 - `[Guard]` describes the acceptable properties of parameter candidate
 
-Code finds all viable paths statically and then runs them as a sequence.
+Code finds all viable paths statically and then runs them as a sequence. There is also a runtime validator to make sure promised return value of function declared via an attribute statically has been followed.
 
 ```csharp
 public class TestAspects
