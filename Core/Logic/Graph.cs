@@ -12,7 +12,7 @@ namespace Core.Logic
 
         //  No. of vertices
         private readonly Dictionary<T, List<T>> _edgeSet;
-        
+
         private readonly Dictionary<T, List<T>> _negativeEdgeSet;
 
         public Graph(HashSet<T> vertices)
@@ -27,7 +27,7 @@ namespace Core.Logic
         {
             _edgeSet[src].Add(dest);
         }
-        
+
         public void AddNegativeEdge(T src, T dest)
         {
             _negativeEdgeSet[src].Add(dest);
@@ -41,10 +41,10 @@ namespace Core.Logic
             Stack<T> stack)
         {
             if (inDegree == null) throw new ArgumentNullException(nameof(inDegree));
-            
+
             //  To indicate whether all topological are found or not
             var flag = false;
-            
+
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
             foreach (var node in _vertices)
             {
@@ -84,21 +84,25 @@ namespace Core.Logic
                 var sList = stack.ToList();
                 // Need to reverse the stack to get correct enumeration
                 sList.Reverse();
-                
-                var result = sList.Take(1).Concat(sList.Skip(1).Where(x => _edgeSet.Any(y => y.Value.Contains(x)))).ToList();
 
-                var valid = true;
-                for (var i = 1; i < result.Count; i++)
+                var result = new List<T>();
+
+                for (var i = 1; i < sList.Count; i++)
                 {
-                    var source = result[i - 1];
-                    var destination = result[i];
-                    if (_negativeEdgeSet[source].Contains(destination))
+                    var source = sList[i - 1];
+                    var destination = sList[i];
+                    if (!_negativeEdgeSet[source].Contains(destination) && _edgeSet[source].Contains(destination))
                     {
-                        valid = false;
+                        result.Add(source);
+                    }
+
+                    if (i + 1 == sList.Count)
+                    {
+                        result.Add(destination);
                     }
                 }
 
-                if (valid)
+                if (result.Count > 0)
                 {
                     yield return result;
                 }

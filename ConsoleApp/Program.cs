@@ -68,7 +68,19 @@ namespace ConsoleApp
             {
                 Name = "zack"
             };
-        } 
+        }
+        
+        [State]
+        [Declaration(typeof(C), "Name", SubsetExpressionType.Equal, "zack")]
+        public C Step3Prime(
+            [Guard(typeof(B), "Name", SubsetExpressionType.Equal, "taha")]
+            B b)
+        {
+            return new C
+            {
+                Name = "zack"
+            };
+        }
     }
     
     class Program

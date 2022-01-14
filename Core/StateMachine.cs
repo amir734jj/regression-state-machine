@@ -94,6 +94,13 @@ namespace Core
             var graphRecipeBuilder = new RecipeBuilder(states);
 
             _recipes = graphRecipeBuilder.Recipes;
+            
+            Console.WriteLine("Found these recipes:");
+            foreach (var recipe in _recipes)
+            {
+                Console.WriteLine(string.Join(',', recipe));
+            }
+            Console.WriteLine();
         }
 
         public async Task Run(Dictionary<string, object> dict, T instance)
@@ -153,7 +160,7 @@ namespace Core
 
                     dynamicBag.AddFirst((state.ReturnType, result));
 
-                    Console.WriteLine($"Finished: {state}.");
+                    Console.WriteLine($"Finished: {state}.\n");
                 }
             }
         }
