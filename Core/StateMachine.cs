@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Core.Attributes;
 using Core.Exceptions;
+using Core.Extensions;
 using Core.Logic;
 using Core.Models;
 
@@ -52,9 +53,23 @@ namespace Core
                     {
                         throw new ArgumentException("Inconsistent declaration type over return type.");
                     }
-                    
-                    // Check for overlap in guards
-                    
+
+                    if (paramAttrs.Any(y =>
+                            y.Value.Combinations(paramAttrs[y.Key])
+                                .Where(z => !z.Item1.Equals(z.Item2))
+                                .Any(z =>
+                                    z.Item1.IsSubsetOf(z.Item2) || z.Item2.IsSubsetOf(z.Item1))))
+                    {
+                        throw new ArgumentException("Overlap between guards is not allowed.");
+                    }
+
+                    if (declAttrs.Combinations(declAttrs)
+                        .Where(y => !y.Item1.Equals(y.Item2))
+                        .Any(y => y.Item1.IsSubsetOf(y.Item2) || y.Item2.IsSubsetOf(y.Item1)))
+                    {
+                        throw new ArgumentException("Overlap between declarations is not allowed.");
+                    }
+
                     return new State
                     {
                         Name = x.Name,
@@ -68,8 +83,10 @@ namespace Core
                     };
                 })
                 .ToList();
-            
-            if (states.Any(state => state.ParameterGuards.Keys.Any(p => states.Except(new[] { state }).All(x => x.ReturnType != p.ParameterType))))
+
+            if (states.Any(state =>
+                    state.ParameterGuards.Keys.Any(p =>
+                        states.Except(new[] { state }).All(x => x.ReturnType != p.ParameterType))))
             {
                 throw new ArgumentException("Cannot find a valid state that supplies parameter for a state.");
             }
@@ -81,11 +98,12 @@ namespace Core
 
         public async Task Run(Dictionary<string, object> dict, T instance)
         {
-            if (_recipes.SelectMany(x => x).SelectMany(x => x.BoundParameters.Values).Select(x => x.Name).Except(dict.Keys).Count() != 0)
+            if (_recipes.SelectMany(x => x).SelectMany(x => x.BoundParameters.Values).Select(x => x.Name)
+                    .Except(dict.Keys).Count() != 0)
             {
                 throw new ArgumentException("Dictionary of bounded parameters is not complete.", nameof(dict));
             }
-            
+
             foreach (var sort in _recipes)
             {
                 Console.WriteLine($"Starting a sequence: {string.Join(',', sort)}.");
@@ -105,13 +123,14 @@ namespace Core
                         {
                             foreach (var (_, dynamicVal) in dynamicBag.Where(x => x.Item1 == p.ParameterType))
                             {
-                                if (state.ParameterGuards.ContainsKey(p) && state.ParameterGuards[p].All(x => x.Validator(dynamicVal)))
+                                if (state.ParameterGuards.ContainsKey(p) &&
+                                    state.ParameterGuards[p].All(x => x.Validator(dynamicVal)))
                                 {
                                     return dynamicVal;
                                 }
                             }
                         }
-                        
+
                         throw new RuntimeException($"Cannot supply parameter: {p.Name} in state: {state}.");
                     });
 

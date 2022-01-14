@@ -73,9 +73,9 @@ namespace Core.Attributes
             // ReSharper disable once InvertIf
             if (Field == guard.Field)
             {
-                if (Type == guard.Type)
+                if (Type == guard.Type && expressionAnalyzer.IsSubsetOf(ExpressionType, Value, guard.ExpressionType, guard.Value))
                 {
-                    return expressionAnalyzer.IsSubsetOf(ExpressionType, Value, guard.ExpressionType, guard.Value);
+                    return true;
                 }
             }
 
