@@ -24,8 +24,18 @@ namespace ConsoleApp
     public class TestAspects
     {
         [State]
-        [Declaration(typeof(A), "Name", SubsetExpressionType.Equal, "amir")]
+        [Declaration(typeof(A), "Name", SubsetExpressionType.Equal, "amir1")]
         public A Step1([BoundValue("foo")]string amir)
+        {
+            return new A
+            {
+                Name = "amir"
+            };
+        }
+        
+        [State]
+        [Declaration(typeof(A), "Name", SubsetExpressionType.Equal, "amir")]
+        public A Step1Prime([BoundValue("foo")]string amir)
         {
             return new A
             {

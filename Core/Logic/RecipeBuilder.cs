@@ -21,6 +21,10 @@ namespace Core.Logic
                     {
                         graph.AddEdge(source, destination);
                     }
+                    else
+                    {
+                        graph.AddNegativeEdge(source, destination);
+                    }
                 }
             }
 

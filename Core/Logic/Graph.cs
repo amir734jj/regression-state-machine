@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
+using Core.Extensions;
 
 namespace Core.Logic
 {
@@ -9,23 +11,26 @@ namespace Core.Logic
         private readonly HashSet<T> _vertices;
 
         //  No. of vertices
-        private readonly Dictionary<T, List<T>> _adjListArray;
+        private readonly Dictionary<T, List<T>> _edgeSet;
+        
+        private readonly Dictionary<T, List<T>> _negativeEdgeSet;
 
         public Graph(HashSet<T> vertices)
         {
             _vertices = vertices;
-            _adjListArray = vertices.ToDictionary(x => x, x => new List<T>());
+            _edgeSet = vertices.ToDictionary(x => x, _ => new List<T>());
+            _negativeEdgeSet = vertices.ToDictionary(x => x, _ => new List<T>());
         }
 
         //  Utility function to add edge
         public void AddEdge(T src, T dest)
         {
-            if (!_adjListArray.ContainsKey(src))
-            {
-                _adjListArray[src] = new List<T>();
-            }
-
-            _adjListArray[src].Add(dest);
+            _edgeSet[src].Add(dest);
+        }
+        
+        public void AddNegativeEdge(T src, T dest)
+        {
+            _negativeEdgeSet[src].Add(dest);
         }
 
         //  Main recursive function to print all possible
@@ -49,7 +54,7 @@ namespace Core.Logic
                     // including in result
                     visited[node] = true;
                     stack.Push(node);
-                    foreach (var adjacent in _adjListArray.GetValueOrDefault(node, new List<T>())!)
+                    foreach (var adjacent in _edgeSet.GetValueOrDefault(node, new List<T>())!)
                     {
                         inDegree[adjacent]--;
                     }
@@ -63,7 +68,7 @@ namespace Core.Logic
                     visited[node] = false;
                     stack.Pop();
 
-                    foreach (var adjacent in _adjListArray.GetValueOrDefault(node, new List<T>())!)
+                    foreach (var adjacent in _edgeSet.GetValueOrDefault(node, new List<T>())!)
                     {
                         inDegree[adjacent]++;
                     }
@@ -80,12 +85,20 @@ namespace Core.Logic
                 // Need to reverse the stack to get correct enumeration
                 sList.Reverse();
                 
-                // Add everything else
-                var result = sList.Concat(_vertices.Where(v => !sList.Contains(v))).ToList();
+                var result = sList.Take(1).Concat(sList.Skip(1).Where(x => _edgeSet.Any(y => y.Value.Contains(x)))).ToList();
 
-                // Ensure connectedness
-                if (result.Skip(1).Zip(Enumerable.Range(1, result.Count - 1))
-                        .All(x => _adjListArray[result[x.Second - 1]].Contains(x.First)))
+                var valid = true;
+                for (var i = 1; i < result.Count; i++)
+                {
+                    var source = result[i - 1];
+                    var destination = result[i];
+                    if (_negativeEdgeSet[source].Contains(destination))
+                    {
+                        valid = false;
+                    }
+                }
+
+                if (valid)
                 {
                     yield return result;
                 }
@@ -101,7 +114,7 @@ namespace Core.Logic
             var inDegree = new Dictionary<T, int>();
 
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var (_, neighbors) in _adjListArray)
+            foreach (var (_, neighbors) in _edgeSet)
             {
                 foreach (var neighbor in neighbors)
                 {
@@ -110,8 +123,9 @@ namespace Core.Logic
             }
 
             var stack = new Stack<T>();
-            
-            return AllTopologicalSortsUtil(visited, inDegree, stack).ToHashSet();
+            var result = AllTopologicalSortsUtil(visited, inDegree, stack).ToList();
+
+            return result.DistinctBy(x => string.Join(',', x.Select(y => y.ToString()))).ToHashSet();
         }
     }
 }

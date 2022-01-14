@@ -70,11 +70,6 @@ namespace Core
             var graphRecipeBuilder = new RecipeBuilder(states);
 
             _recipes = graphRecipeBuilder.Recipes;
-            
-            foreach (var recipe in _recipes)
-            {
-                Console.WriteLine(string.Join(',', recipe.Select(x => x.Name)));
-            }
         }
 
         public async Task Run(Dictionary<string, object> dict, T instance)
@@ -86,11 +81,11 @@ namespace Core
             
             foreach (var sort in _recipes)
             {
-                Console.WriteLine($"Starting a sequence: {string.Join(',', sort.Select(x => x.Name))}.");
+                Console.WriteLine($"Starting a sequence: {string.Join(',', sort)}.");
                 var dynamicBag = new LinkedList<(Type type, object result)>();
                 foreach (var state in sort)
                 {
-                    Console.WriteLine($"Starting: {state.Name}");
+                    Console.WriteLine($"Starting: {state}");
                     var parameters = state.Parameters.Select(p =>
                     {
                         if (state.BoundParameters.ContainsKey(p))
@@ -110,7 +105,7 @@ namespace Core
                             }
                         }
                         
-                        throw new RuntimeException($"Cannot supply parameter: {p.Name} in state: {state.Name}.");
+                        throw new RuntimeException($"Cannot supply parameter: {p.Name} in state: {state}.");
                     });
 
                     object result;
@@ -127,12 +122,12 @@ namespace Core
 
                     if (state.Declarations.Any(declaration => !declaration.Validator(result)))
                     {
-                        throw new RuntimeException($"{state.Name} promised declaration has not been followed.");
+                        throw new RuntimeException($"{state} promised declaration has not been followed.");
                     }
 
                     dynamicBag.AddFirst((state.ReturnType, result));
 
-                    Console.WriteLine($"Finished: {state.Name}.");
+                    Console.WriteLine($"Finished: {state}.");
                 }
             }
         }
