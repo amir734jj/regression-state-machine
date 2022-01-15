@@ -63,16 +63,19 @@ namespace Core.Attributes
             Validator = lambdaExpr.Compile();
         }
 
-        public bool IsCompatibleWith(GuardAttribute guard)
+        /// <summary>
+        /// Checks whether A is a subset of B
+        /// </summary>
+        public bool IsSubsetOf(GuardAttribute guard)
         {
             var expressionAnalyzer = new ExpressionAnalyzer();
             
             // ReSharper disable once InvertIf
             if (Field == guard.Field)
             {
-                if (Type == guard.Type)
+                if (Type == guard.Type && expressionAnalyzer.IsSubsetOf(ExpressionType, Value, guard.ExpressionType, guard.Value))
                 {
-                    return expressionAnalyzer.IsCompatibleWith(ExpressionType, Value, guard.ExpressionType, guard.Value);
+                    return true;
                 }
             }
 

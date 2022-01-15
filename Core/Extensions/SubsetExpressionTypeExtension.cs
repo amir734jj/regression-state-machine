@@ -11,6 +11,7 @@ namespace Core.Extensions
             return expressionType switch
             {
                 SubsetExpressionType.Equal => ExpressionType.Equal,
+                SubsetExpressionType.NotEqual => ExpressionType.NotEqual,
                 _ => throw new ArgumentOutOfRangeException(nameof(expressionType), expressionType, null)
             };
         }

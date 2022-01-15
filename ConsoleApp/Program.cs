@@ -24,7 +24,8 @@ namespace ConsoleApp
     public class TestAspects
     {
         [State]
-        [Declaration(typeof(A), "Name", SubsetExpressionType.Equal, "amir1")]
+        [Declaration(typeof(A), "Name", SubsetExpressionType.NotEqual, "amir1")]
+        [Declaration(typeof(A), "Name", SubsetExpressionType.NotEqual, "f")]
         public A Step1([BoundValue("foo")]string amir)
         {
             return new A
@@ -67,7 +68,19 @@ namespace ConsoleApp
             {
                 Name = "zack"
             };
-        } 
+        }
+        
+        [State]
+        [Declaration(typeof(C), "Name", SubsetExpressionType.Equal, "zack")]
+        public C Step3Prime(
+            [Guard(typeof(B), "Name", SubsetExpressionType.Equal, "taha")]
+            B b)
+        {
+            return new C
+            {
+                Name = "zack"
+            };
+        }
     }
     
     class Program

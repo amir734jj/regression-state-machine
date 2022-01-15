@@ -6,6 +6,19 @@ namespace Core.Extensions
 {
     internal static class LinqExtension
     {
+        public static IEnumerable<Tuple<T1, T2>> Combinations<T1, T2>(this IEnumerable<T1> source1, IList<T2> source2)
+        {
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var x in source1)
+            {
+                foreach (var y in source2)
+                {
+                    yield return new Tuple<T1, T2>(x, y);
+                }
+            }
+        }
+        
+        
         public static IEnumerable<TSource> DistinctBy<TSource>(this IEnumerable<TSource> source, params Func<TSource, object>[] keySelectors)
         {
             // initialize the table
