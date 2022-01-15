@@ -6,7 +6,7 @@ using Core.Attributes;
 
 namespace Core.Models
 {
-    public class State
+    internal class State
     {
         public bool IsAsync { get; set; }
         

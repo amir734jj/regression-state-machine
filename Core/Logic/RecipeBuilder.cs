@@ -5,7 +5,7 @@ using Core.Models;
 
 namespace Core.Logic
 {
-    public class RecipeBuilder
+    internal class RecipeBuilder
     {
         public RecipeBuilder(List<State> states)
         {

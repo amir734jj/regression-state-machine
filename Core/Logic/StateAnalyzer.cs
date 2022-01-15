@@ -2,10 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Core.Attributes;
 using Core.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Logic
 {
-    public class StateAnalyzer
+    internal class StateAnalyzer
     {
         // ReSharper disable once MemberCanBeMadeStatic.Global
         public bool CanBeConnected(State source, State destination)

@@ -6,37 +6,48 @@ using System.Threading.Tasks;
 using Core.Attributes;
 using Core.Exceptions;
 using Core.Extensions;
+using Core.Interfaces;
 using Core.Logic;
 using Core.Models;
+using Microsoft.Extensions.Logging;
+using static System.String;
 
 namespace Core
 {
-    public class StateMachine<T>
+    public class StateMachine<T> : IStateMachine<T>
     {
+        private readonly ILogger<StateMachine<T>> _logger;
+        
         private readonly HashSet<List<State>> _recipes;
 
-        public StateMachine()
+        public StateMachine(ILogger<StateMachine<T>> logger)
         {
+            _logger = logger;
+            
             var states = typeof(T).GetMethods(BindingFlags.Public | BindingFlags.Instance)
                 .Where(x => x.GetCustomAttribute<StateAttribute>() != null)
-                .Select(x =>
+                .Select(state =>
                 {
-                    if (x.ReturnType == typeof(void))
+                    if (state.ReturnType == typeof(void))
                     {
+                        logger.LogError("{} returns void as result, it should return a (async) type", state);
+                        
                         throw new ArgumentException("State should not return void result.");
                     }
 
-                    var parameters = x.GetParameters().ToList();
-                    var isAsync = x.ReturnType.IsGenericType &&
-                                  x.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
+                    var parameters = state.GetParameters().ToList();
+                    var isAsync = state.ReturnType.IsGenericType &&
+                                  state.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
 
                     if (isAsync && parameters.Count == 0)
                     {
+                        logger.LogError("{} returns void async result, it should return a (async) type", state);
+                        
                         throw new ArgumentException("Async state should not return void result.");
                     }
 
-                    var returnType = isAsync ? x.ReturnType.GetGenericArguments()[0] : x.ReturnType;
-                    var declAttrs = x.GetCustomAttributes<DeclarationAttribute>().ToList();
+                    var returnType = isAsync ? state.ReturnType.GetGenericArguments()[0] : state.ReturnType;
+                    var declAttrs = state.GetCustomAttributes<DeclarationAttribute>().ToList();
                     var paramAttrs = parameters
                         .Where(y => y.GetCustomAttribute<BoundValueAttribute>() == null)
                         .ToDictionary(y => y, y => y.GetCustomAttributes<GuardAttribute>().ToList());
@@ -46,11 +57,15 @@ namespace Core
 
                     if (paramAttrs.Any(y => y.Value.Any() && y.Value.All(z => z.Type != y.Key.ParameterType)))
                     {
+                        logger.LogError("{} has guard over parameters that are inconsistently typed", state);
+                        
                         throw new ArgumentException("Inconsistent guard type over parameter.");
                     }
 
                     if (declAttrs.Any(y => y.Type != returnType))
                     {
+                        logger.LogError("{} has declaration over method that are inconsistently typed", state);
+                        
                         throw new ArgumentException("Inconsistent declaration type over return type.");
                     }
 
@@ -60,6 +75,8 @@ namespace Core
                                 .Any(z =>
                                     z.Item1.IsSubsetOf(z.Item2) || z.Item2.IsSubsetOf(z.Item1))))
                     {
+                        logger.LogError("{} overlap between parameter guards that prevents static scheduling", state);
+                        
                         throw new ArgumentException("Overlap between guards is not allowed.");
                     }
 
@@ -67,13 +84,15 @@ namespace Core
                         .Where(y => !y.Item1.Equals(y.Item2))
                         .Any(y => y.Item1.IsSubsetOf(y.Item2) || y.Item2.IsSubsetOf(y.Item1)))
                     {
+                        logger.LogError("{} overlap between declarations that prevents static scheduling", state);
+                        
                         throw new ArgumentException("Overlap between declarations is not allowed.");
                     }
 
                     return new State
                     {
-                        Name = x.Name,
-                        MethodInfo = x,
+                        Name = state.Name,
+                        MethodInfo = state,
                         Parameters = parameters,
                         IsAsync = isAsync,
                         ReturnType = returnType,
@@ -88,19 +107,16 @@ namespace Core
                     state.ParameterGuards.Keys.Any(p =>
                         states.Except(new[] { state }).All(x => x.ReturnType != p.ParameterType))))
             {
+                logger.LogError("Cannot find a valid that supplies parameter for a state {}", states);
+                
                 throw new ArgumentException("Cannot find a valid state that supplies parameter for a state.");
             }
 
             var graphRecipeBuilder = new RecipeBuilder(states);
 
             _recipes = graphRecipeBuilder.Recipes;
-            
-            Console.WriteLine("Found these recipes:");
-            foreach (var recipe in _recipes)
-            {
-                Console.WriteLine(string.Join(',', recipe));
-            }
-            Console.WriteLine();
+
+            _logger.LogInformation("Found these recipes: {}", Join(';', _recipes.Select(x => Join(',', x))));
         }
 
         public async Task Run(Dictionary<string, object> dict, T instance)
@@ -113,11 +129,12 @@ namespace Core
 
             foreach (var sort in _recipes)
             {
-                Console.WriteLine($"Starting a sequence: {string.Join(',', sort)}.");
+                _logger.LogInformation("Starting a sequence: {}", Join(',', sort));
+                
                 var dynamicBag = new LinkedList<(Type type, object result)>();
                 foreach (var state in sort)
                 {
-                    Console.WriteLine($"Starting: {state}");
+                    _logger.LogInformation("Starting: {}", state);
                     var parameters = state.Parameters.Select(p =>
                     {
                         if (state.BoundParameters.ContainsKey(p))
@@ -138,6 +155,8 @@ namespace Core
                             }
                         }
 
+                        _logger.LogError("Cannot supply parameter: {} in state: {}", p.Name, state);
+                        
                         throw new RuntimeException($"Cannot supply parameter: {p.Name} in state: {state}.");
                     });
 
@@ -155,12 +174,14 @@ namespace Core
 
                     if (state.Declarations.Any(declaration => !declaration.Validator(result)))
                     {
+                        _logger.LogError("{} promised declaration has not been followed", state);
+                        
                         throw new RuntimeException($"{state} promised declaration has not been followed.");
                     }
 
                     dynamicBag.AddFirst((state.ReturnType, result));
 
-                    Console.WriteLine($"Finished: {state}.\n");
+                    _logger.LogInformation("Finished: {}", state);
                 }
             }
         }

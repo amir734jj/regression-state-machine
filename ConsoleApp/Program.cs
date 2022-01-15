@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Core;
 using Core.Attributes;
 using Core.Models;
+using Microsoft.Extensions.Logging;
 
 namespace ConsoleApp
 {
@@ -87,12 +88,15 @@ namespace ConsoleApp
     {
         static async Task Main(string[] args)
         {
+            var loggerFactory = LoggerFactory.Create(x => x.AddConsole());
+            
             var dict = new Dictionary<string, object>
             {
                 ["foo"] = "bar"
             };
+
+            var fsm = new StateMachine<TestAspects>(loggerFactory.CreateLogger<StateMachine<TestAspects>>());
             
-            var fsm = new StateMachine<TestAspects>();
             await fsm.Run(dict, new TestAspects());
         }
     }

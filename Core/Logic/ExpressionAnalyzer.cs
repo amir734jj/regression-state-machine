@@ -2,12 +2,12 @@ using Core.Models;
 
 namespace Core.Logic
 {
-    public class ExpressionAnalyzer
+    internal class ExpressionAnalyzer
     {
         /// <summary>
         /// Checks whether A is a subset of B
         /// </summary>
-        public bool IsSubsetOf(
+        public static bool IsSubsetOf(
             SubsetExpressionType subsetExpressionType1, object val1,
             SubsetExpressionType subsetExpressionType2, object val2)
         {
