@@ -108,6 +108,19 @@ namespace Core
                         states.Except(new[] { state }).All(x => x.ReturnType != p.ParameterType))))
             {
                 logger.LogError("Cannot find a valid that supplies parameter for a state {}", states);
+
+                throw new ArgumentException("Cannot find a valid state that supplies parameter type for a state.");
+            }
+            
+            if (states.Any(state =>
+                    state.ParameterGuards
+                        .SelectMany(x => x.Value)
+                        .Any(p => !states.Except(new[] { state })
+                            .SelectMany(x => x.Declarations)
+                            .Where(x => x.IsRelatedTo(p))
+                            .Any(x => x.IsSubsetOf(p)))))
+            {
+                logger.LogError("Cannot find a valid that supplies parameter for a state {}", states);
                 
                 throw new ArgumentException("Cannot find a valid state that supplies parameter for a state.");
             }

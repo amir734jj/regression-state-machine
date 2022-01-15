@@ -65,7 +65,7 @@ namespace Core.Attributes
 
         public bool IsRelatedTo(GuardAttribute guard)
         {
-            return Field == guard.Field;
+            return Type == guard.Type && Field == guard.Field;
         }
 
         /// <summary>
@@ -73,15 +73,10 @@ namespace Core.Attributes
         /// </summary>
         public bool IsSubsetOf(GuardAttribute guard)
         {
-            var expressionAnalyzer = new ExpressionAnalyzer();
-            
             // ReSharper disable once InvertIf
-            if (Field == guard.Field)
+            if (Field == guard.Field && Type == guard.Type && ExpressionAnalyzer.IsSubsetOf(ExpressionType, Value, guard.ExpressionType, guard.Value))
             {
-                if (Type == guard.Type && ExpressionAnalyzer.IsSubsetOf(ExpressionType, Value, guard.ExpressionType, guard.Value))
-                {
-                    return true;
-                }
+                return true;
             }
 
             return false;

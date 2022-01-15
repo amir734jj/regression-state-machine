@@ -49,7 +49,8 @@ namespace ConsoleApp
         [State]
         [Declaration(typeof(C), "Val", SubsetExpressionType.Equal, 5)]
         public C ProduceCAlt(
-            [Guard(typeof(B), "Val", SubsetExpressionType.NotEqual, -1)] B b) => new C(5);
+            [Guard(typeof(B), "Val", SubsetExpressionType.NotEqual, -1)] B bx,
+            [Guard(typeof(B), "Val", SubsetExpressionType.NotEqual, -1)] B by) => new C(5);
     }
     
     class Program

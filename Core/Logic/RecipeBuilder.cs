@@ -36,6 +36,8 @@ namespace Core.Logic
 
             Recipes = graph.AllTopologicalSorts();
             
+            // Console.WriteLine(graph);
+            
             foreach (var recipe in Recipes)
             {
                 Console.WriteLine(string.Join(',',recipe));

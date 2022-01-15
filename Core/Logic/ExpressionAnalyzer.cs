@@ -2,7 +2,7 @@ using Core.Models;
 
 namespace Core.Logic
 {
-    internal class ExpressionAnalyzer
+    internal static class ExpressionAnalyzer
     {
         /// <summary>
         /// Checks whether A is a subset of B
