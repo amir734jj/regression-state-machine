@@ -16,7 +16,7 @@ namespace Core.Logic
                 SubsetExpressionType.Equal when subsetExpressionType2 == SubsetExpressionType.Equal => val1.Equals(val2),
                 SubsetExpressionType.NotEqual when subsetExpressionType2 == SubsetExpressionType.NotEqual => val1.Equals(val2),
                 SubsetExpressionType.Equal when subsetExpressionType2 == SubsetExpressionType.NotEqual => !val1.Equals(val2),
-                SubsetExpressionType.NotEqual when subsetExpressionType2 == SubsetExpressionType.Equal => !val1.Equals(val2),
+                SubsetExpressionType.NotEqual when subsetExpressionType2 == SubsetExpressionType.Equal => false,
                 _ => false
             };
         }

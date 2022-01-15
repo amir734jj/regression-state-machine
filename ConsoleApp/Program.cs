@@ -5,83 +5,51 @@ using Core.Attributes;
 using Core.Models;
 using Microsoft.Extensions.Logging;
 
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit {}
+}
+
 namespace ConsoleApp
 {
-    public class A
-    {
-        public string Name { get; set; }
-    }
-
-    public class B
-    {
-        public string Name { get; set; }
-    }
-
-    public class C
-    {
-        public string Name { get; set; }
-    }
+    public record A(int Val);
+    public record B(int Val);
+    public record C(int Val);
     
     public class TestAspects
     {
         [State]
-        [Declaration(typeof(A), "Name", SubsetExpressionType.NotEqual, "amir1")]
-        [Declaration(typeof(A), "Name", SubsetExpressionType.NotEqual, "f")]
-        public A Step1([BoundValue("foo")]string amir)
-        {
-            return new A
-            {
-                Name = "amir"
-            };
-        }
+        [Declaration(typeof(A), "Val", SubsetExpressionType.Equal, 1)]
+        public A ProduceA1([BoundValue("key")] string _) => new A(1);
         
         [State]
-        [Declaration(typeof(A), "Name", SubsetExpressionType.Equal, "amir")]
-        public A Step1Prime([BoundValue("foo")]string amir)
-        {
-            return new A
-            {
-                Name = "amir"
-            };
-        }
+        [Declaration(typeof(A), "Val", SubsetExpressionType.Equal, 2)]
+        public A ProduceA2([BoundValue("key")] string _) => new A(2);
         
         [State]
-        [Declaration(typeof(B), "Name", SubsetExpressionType.Equal, "taha")]
-        public async Task<B> Step2(
-            [Guard(typeof(A), "Name", SubsetExpressionType.Equal, "amir")]
-            A a)
-        {
-            await Task.Delay(2000);
-            
-            return new B
-            {
-                Name = "taha"
-            };
-        } 
+        [Declaration(typeof(A), "Val", SubsetExpressionType.Equal, 1)]
+        public A ProduceA1Alt([BoundValue("key")] string _) => new A(1);
         
         [State]
-        [Declaration(typeof(C), "Name", SubsetExpressionType.Equal, "zack")]
-        public C Step3(
-            [Guard(typeof(B), "Name", SubsetExpressionType.Equal, "taha")]
-            B b)
-        {
-            return new C
-            {
-                Name = "zack"
-            };
-        }
+        [Declaration(typeof(A), "Val", SubsetExpressionType.Equal, 2)]
+        public A ProduceA2Alt([BoundValue("key")] string _) => new A(2);
+
+        [State]
+        [Declaration(typeof(B), "Val", SubsetExpressionType.Equal, 3)]
+        public async Task<B> ProduceB(
+            [BoundValue("key")] string _,
+            [Guard(typeof(A), "Val", SubsetExpressionType.Equal, 1)] A x,
+            [Guard(typeof(A), "Val", SubsetExpressionType.Equal, 2)] A y) => new B(3);
+
+        [State]
+        [Declaration(typeof(C), "Val", SubsetExpressionType.Equal, 4)]
+        public C ProduceC(
+            [Guard(typeof(B), "Val", SubsetExpressionType.NotEqual, -1)] B b) => new C(4);
         
         [State]
-        [Declaration(typeof(C), "Name", SubsetExpressionType.Equal, "zack")]
-        public C Step3Prime(
-            [Guard(typeof(B), "Name", SubsetExpressionType.Equal, "taha")]
-            B b)
-        {
-            return new C
-            {
-                Name = "zack"
-            };
-        }
+        [Declaration(typeof(C), "Val", SubsetExpressionType.Equal, 5)]
+        public C ProduceCAlt(
+            [Guard(typeof(B), "Val", SubsetExpressionType.NotEqual, -1)] B b) => new C(5);
     }
     
     class Program
@@ -92,7 +60,7 @@ namespace ConsoleApp
             
             var dict = new Dictionary<string, object>
             {
-                ["foo"] = "bar"
+                ["key"] = "Hello world!"
             };
 
             var fsm = new StateMachine<TestAspects>(loggerFactory.CreateLogger<StateMachine<TestAspects>>());

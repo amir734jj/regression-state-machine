@@ -63,6 +63,11 @@ namespace Core.Attributes
             Validator = lambdaExpr.Compile();
         }
 
+        public bool IsRelatedTo(GuardAttribute guard)
+        {
+            return Field == guard.Field;
+        }
+
         /// <summary>
         /// Checks whether A is a subset of B
         /// </summary>
@@ -80,6 +85,11 @@ namespace Core.Attributes
             }
 
             return false;
+        }
+
+        public override string ToString()
+        {
+            return Field == null ? $"{Type.Name} ({ExpressionType}) {Value}" : $"{Type.Name}.{Field} ({ExpressionType}) {Value}";
         }
     }
 }

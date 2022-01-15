@@ -1,8 +1,5 @@
-using System.Collections.Generic;
 using System.Linq;
-using Core.Attributes;
 using Core.Models;
-using Microsoft.Extensions.Logging;
 
 namespace Core.Logic
 {
@@ -11,17 +8,16 @@ namespace Core.Logic
         // ReSharper disable once MemberCanBeMadeStatic.Global
         public bool CanBeConnected(State source, State destination)
         {
-            foreach (var parameterInfo in destination.Parameters
-                         .Where(p => !destination.BoundParameters.ContainsKey(p) && p.ParameterType == source.ReturnType))
+            foreach (var (_, guards) in destination.ParameterGuards
+                         .Where(p => p.Key.ParameterType == source.ReturnType))
             {
-                var guards = destination.ParameterGuards.GetValueOrDefault(parameterInfo, new List<GuardAttribute>());
                 if (guards!.All(guard =>
-                        source.Declarations.All(decl => decl.IsSubsetOf(guard))))
+                        source.Declarations
+                            .Where(decl => decl.IsRelatedTo(guard))
+                            .All(decl => decl.IsSubsetOf(guard))))
                 {
                     return true;
                 }
-
-                return false;
             }
 
             return false;

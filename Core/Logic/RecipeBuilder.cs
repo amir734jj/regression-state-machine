@@ -17,6 +17,12 @@ namespace Core.Logic
                 foreach (var destination in states
                              .Where(destination => source != destination))
                 {
+                    /*if (source.ToString() == "A ProduceA2(String)" &&
+                        destination.ToString() == "B ProduceB(String,A,A)")
+                    {
+                        Console.WriteLine("here");
+                    }*/
+                    
                     if (stateAnalyzer.CanBeConnected(source, destination))
                     {
                         graph.AddEdge(source, destination);
@@ -29,6 +35,11 @@ namespace Core.Logic
             }
 
             Recipes = graph.AllTopologicalSorts();
+            
+            foreach (var recipe in Recipes)
+            {
+                Console.WriteLine(string.Join(',',recipe));
+            }
 
             if (Recipes.Count == 0)
             {

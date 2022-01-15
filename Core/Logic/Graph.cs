@@ -103,7 +103,7 @@ namespace Core.Logic
 
                 if (result.Count > 0)
                 {
-                    yield return result;
+                    yield return sList;
                 }
             }
         }
@@ -129,6 +129,11 @@ namespace Core.Logic
             var result = AllTopologicalSortsUtil(visited, inDegree, stack).ToList();
 
             return result.DistinctBy(x => string.Join(',', x.Select(y => y.ToString()))).ToHashSet();
+        }
+
+        public override string ToString()
+        {
+            return string.Join("\n", _edgeSet.Select(x => $"{x.Key}\n\t{string.Join(',', x.Value)}"));
         }
     }
 }
